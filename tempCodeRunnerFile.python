@@ -1,0 +1,69 @@
+import streamlit as st
+from sqlalchemy import create_engine, Column, String, Integer, Boolean, Float
+from sqlalchemy.orm import declarative_base, sessionmaker
+
+# ... (previous code)
+
+# Define the database model
+Base = declarative_base()
+
+class User(Base):
+    # ... (previous code)
+    height = Column(Float)
+
+# ... (previous code)
+
+# Create an SQLite database
+DATABASE_URL = "sqlite:///./test.db"
+engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+Base.metadata.create_all(bind=engine)
+
+# ... (previous code)
+
+elif page == "Diet Plan":
+    if st.session_state.is_authenticated:
+        st.title("Diet Plan Recommendation")
+
+        db = SessionLocal()
+        user = db.query(User).filter(User.username == st.session_state.username).first()
+
+        st.subheader("Body Mass Index (BMI) Calculation:")
+        st.write("BMI is a measure of body fat based on your weight in relation to your height.")
+        st.write("You can calculate your BMI using the following formula:")
+        st.latex(r'BMI = \frac{{\text{{Weight (kg)}}}}{{(\text{{Height (m)}})^2}}')
+
+        weight = st.number_input("Enter your weight (in kg)", min_value=1.0)
+        height = st.number_input("Enter your height (in meters)", min_value=0.1)
+
+        if st.button("Calculate BMI"):
+            bmi = weight / (height ** 2)
+            st.success(f"Your BMI: {bmi:.2f}")
+
+            # Diet Plan Recommendation based on BMI
+            st.subheader("Diet Plan Recommendation:")
+            if bmi < 18.5:
+                st.write("You are underweight. It is recommended to focus on a balanced diet and increase calorie intake.")
+                st.write("Sample Diet Plan:")
+                st.markdown("- Include more whole grains, lean proteins, and healthy fats.")
+                st.markdown("- Eat smaller, frequent meals throughout the day.")
+                st.markdown("- Incorporate protein-rich snacks like nuts and yogurt.")
+            elif 18.5 <= bmi < 24.9:
+                st.write("Your weight is normal. Maintain a balanced diet and regular exercise routine.")
+                st.write("Sample Diet Plan:")
+                st.markdown("- Consume a variety of fruits, vegetables, whole grains, and lean proteins.")
+                st.markdown("- Include moderate portions of healthy fats.")
+                st.markdown("- Stay hydrated with water and limit sugary beverages.")
+            elif 25 <= bmi < 29.9:
+                st.write("You are overweight. Consider a calorie-controlled diet and regular exercise.")
+                st.write("Sample Diet Plan:")
+                st.markdown("- Focus on portion control and reduce calorie intake.")
+                st.markdown("- Choose nutrient-dense foods and limit processed snacks.")
+                st.markdown("- Include regular aerobic exercise and strength training.")
+            else:
+                st.write("You are obese. Consult with a healthcare professional for a personalized diet plan and exercise regimen.")
+                st.write("Sample Diet Plan:")
+                st.markdown("- Seek guidance from a registered dietitian or healthcare professional.")
+                st.markdown("- Emphasize a balanced diet with portion control.")
+                st.markdown("- Incorporate regular physical activity, including both cardio and strength training.")
+
+        db.close()
